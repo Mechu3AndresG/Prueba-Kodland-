@@ -8,7 +8,8 @@ class Zombie:
         self.detenido = False
         self.atacando=False
         self.muerto=False
-        self.vida = 40
+        self.termino_muerte = False
+        self.vida = 20
         self.animacionesMuerte=animacionesMuerte
         self.animacionesAtaque= animacionesAtacar
         self.animaciones = animacionesCaminarZ
@@ -20,10 +21,16 @@ class Zombie:
         
     def update(self):
     # Elegimos la animación según el estado
-        if self.atacando:
+        if self.muerto and self.frame_index >= len(self.animacionesMuerte):
+            self.termino_muerte = True 
+            return
+        if self.atacando and not self.muerto:
             cooldown_animacion = 50
             animacion_actual = self.animacionesAtaque
         elif self.muerto:
+            cooldown_animacion = 100
+            animacion_actual = self.animacionesMuerte
+        elif self.muerto and self.atacando:
             cooldown_animacion = 50
             animacion_actual = self.animacionesMuerte
         else:
@@ -41,11 +48,13 @@ class Zombie:
             self.update_time = pygame.time.get_ticks()
 
     def ataque(self, atacking):
-        if atacking:
+        if atacking and not self.muerto:
             self.atacando=True
             self.detenido=True
             self.frame_index=0
             self.update_time=pygame.time.get_ticks()
+        elif self.muerto:
+            self.muerte()
 
     def muerte(self):
         self.muerto=True
@@ -58,5 +67,5 @@ class Zombie:
         pygame.draw.rect(interfaz, constantes.COLOR_PERSONAJE, self.forma, 1)
 
     def movimiento(self):
-        if not self.detenido:
+        if not self.detenido and not self.muerto :
             self.forma.x += self.velocidad

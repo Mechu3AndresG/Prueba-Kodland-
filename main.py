@@ -46,11 +46,15 @@ for i in range (9):
     
     imgShot = pygame.image.load(f"assets/Soldado/Soldier-Guy-PNG/Arma de Fuego/03-Shot/E_E_Gun__Attack_00{i}.png")
     imgShot = escalarImg(imgShot, constantes.SCALA_PERSONAJE)
+
+    imgDieJ= pygame.image.load(f"assets/Soldado/Soldier-Guy-PNG/Muerte/E_E__Die_00{i}.png")
+    imgDieJ= escalarImg(imgDieJ, constantes.SCALA_ZOMBIE)
     
     animacionesCaminar.append(img)
     animacionesDisparo.append(imgShot)
+    animacionesMuerte.append(imgDieJ)
 
-jugador=Personaje(508,450, animacionesCaminar, animacionesDisparo)
+jugador=Personaje(508,450, animacionesCaminar, animacionesDisparo,animacionesMuerte)
 
 
 #imagenes zombie
@@ -128,7 +132,8 @@ while True:
         no_camina = True
 
      #mover Jugador
-    jugador.movimiento(deltaX) 
+    if not jugador.jugadorMuerto:
+        jugador.movimiento(deltaX) 
 
     if (caminaDerecha or caminarIzquierda) and not sonido_camina:
         sonido_caminar.play(-1)
@@ -163,20 +168,24 @@ while True:
                 if zombie.vida <= 0 and not zombie.muerto:
                     zombie.muerte()
                     sonido_muerteZ.play()
-                    #zombies.remove(zombie)
                 balas.remove(bala)      
                 break
-        if zombie.forma.colliderect(jugador.forma):
+        if zombie.forma.colliderect(jugador.forma) and not zombie.muerto and not  jugador.jugadorMuerto:
             if not zombie.atacando:
                 zombie.ataque(True)
+                jugador.vidaPersonaje -=10
+                if jugador.vidaPersonaje <=0:
+                    jugador.muerteJ()
                 zombie.detenido = True    
             # Detectar hacia dónde empuja el jugador
-            if caminaDerecha:
+            if caminaDerecha :
                 zombie.forma.x += 3  
-            elif caminarIzquierda:
+            elif caminarIzquierda :
                 zombie.forma.x -= 3  
         else:
             zombie.detenido = False 
+        if zombie.termino_muerte:
+            zombies.remove(zombie)
         zombie.movimiento()
         zombie.update()
         zombie.dibujar(ventana)
@@ -187,7 +196,7 @@ while True:
             pygame.quit();
             sys.exit()
         #Calcular movimiento
-        if event.type== pygame.KEYDOWN:
+        if event.type== pygame.KEYDOWN and not jugador.jugadorMuerto:
             #tecla abajo
             if event.key == pygame.K_a:
                 caminarIzquierda=True

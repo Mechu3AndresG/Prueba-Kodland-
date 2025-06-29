@@ -13,4 +13,4 @@ class Bullet:
 
     def dibujar(self, ventana):
         ventana.blit(self.image, self.forma)
-        pygame.draw.rect(ventana, constantes.COLOR_PERSONAJE, self.forma, 1)
+        

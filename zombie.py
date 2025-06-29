@@ -64,7 +64,7 @@ class Zombie:
     def dibujar(self, interfaz):
         imagen_flip = pygame.transform.flip(self.image, self.flip, False)
         interfaz.blit(imagen_flip, self.forma)
-        pygame.draw.rect(interfaz, constantes.COLOR_PERSONAJE, self.forma, 1)
+        
 
     def movimiento(self):
         if not self.detenido and not self.muerto :

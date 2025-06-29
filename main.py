@@ -172,7 +172,7 @@ while True:
 
         jugador.update(no_camina)
         jugador.dibujar(ventana)
-        vida_jugador= fuente.render(f"Vida: {jugador.vidaPersonaje}", True, (255, 255, 255))
+        vida_jugador= fuente.render(f"Vida Personaje: {jugador.vidaPersonaje}", True, (255, 255, 255))
         ventana.blit(vida_jugador,(800,20))
         #actualizar balas
         for bala in balas[:]:

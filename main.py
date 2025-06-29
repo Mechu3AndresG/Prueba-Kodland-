@@ -58,18 +58,20 @@ jugador=Personaje(508,450, animacionesCaminar, animacionesDisparo)
 imagenZombie =pygame.image.load("assets/zombie/Zombie 01/01-Idle/__Zombie01_Idle_000.png")
 imagenZombie=escalarImg(imagenZombie, constantes.SCALA_ZOMBIE) 
 animacionesCaminarZ=[]
-#animacionesAtacar=[]
 animacionesCaminarZ.append(imagenZombie)
+
 
 for i in range (7):
     img = pygame.image.load(f"assets/zombie/Zombie 01/02-Walk/__Zombie01_Walk_00{i}.png")
     img = escalarImg(img, constantes.SCALA_ZOMBIE)
     animacionesCaminarZ.append(img)
 
-#for i in range (11):
-  #  imgShot = pygame.image.load(f"assets/zombie/Zombie 01/03-Attack/__Zombie01_Attack_00{i}.png")
-   # imgShot = escalarImg(imgShot, constantes.SCALA_PERSONAJE)
-   # animacionesAtacar.append(imgShot)
+animacionesAtacar=[]
+for i in range (11):
+    imgShot = pygame.image.load(f"assets/zombie/Zombie 01/03-Attack/__Zombie01_Attack_{i}.png")
+    imgShot = escalarImg(imgShot, constantes.SCALA_ZOMBIE)
+    animacionesAtacar.append(imgShot)
+
 
 zombies = []
 dificult = 10  # total de zombies que aparecerán
@@ -138,7 +140,7 @@ while True:
     for bala in balas[:]:
         bala.update()
         bala.dibujar(ventana)
-        if bala.rect.right < 0 or bala.rect.left > constantes.ANCHO_VENTANA:
+        if bala.forma.right < 0 or bala.forma.left > constantes.ANCHO_VENTANA:
             balas.remove(bala)
 
     #spawn zombies 
@@ -146,10 +148,28 @@ while True:
     if zombies_creados < dificult and tiempo_actual - tiempo_ultimo_zombie >= zombie_intervalo:
         direccion = random.randint(0, 1)
         x = 1020 if direccion == 1 else 37
-        zombies.append(Zombie(x, 450, animacionesCaminarZ, direccion))
+        zombies.append(Zombie(x, 450, animacionesCaminarZ, animacionesAtacar, direccion))
         zombies_creados += 1
         tiempo_ultimo_zombie = tiempo_actual
+    
     for zombie in zombies[:]:
+        for bala in balas[:]:
+            if bala.forma.colliderect(zombie.forma):
+                zombies.remove(zombie)  
+                balas.remove(bala)      
+                break
+        if zombie.forma.colliderect(jugador.forma):
+            if not zombie.atacando:
+                zombie.ataque(True)
+                zombie.detenido = True    
+            # Detectar hacia dónde empuja el jugador
+            if caminaDerecha:
+                zombie.forma.x += 3  
+            elif caminarIzquierda:
+                zombie.forma.x -= 3  
+        else:
+            zombie.detenido = False 
+
         zombie.movimiento()
         zombie.update()
         zombie.dibujar(ventana)

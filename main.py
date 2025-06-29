@@ -62,25 +62,29 @@ animacionesCaminarZ.append(imagenZombie)
 
 
 for i in range (7):
-    img = pygame.image.load(f"assets/zombie/Zombie 01/02-Walk/__Zombie01_Walk_00{i}.png")
-    img = escalarImg(img, constantes.SCALA_ZOMBIE)
-    animacionesCaminarZ.append(img)
+    imgZ = pygame.image.load(f"assets/zombie/Zombie 01/02-Walk/__Zombie01_Walk_00{i}.png")
+    imgZ = escalarImg(imgZ, constantes.SCALA_ZOMBIE)
+    animacionesCaminarZ.append(imgZ)
 
 animacionesAtacar=[]
 for i in range (11):
-    imgShot = pygame.image.load(f"assets/zombie/Zombie 01/03-Attack/__Zombie01_Attack_{i}.png")
-    imgShot = escalarImg(imgShot, constantes.SCALA_ZOMBIE)
-    animacionesAtacar.append(imgShot)
+    imgAtack = pygame.image.load(f"assets/zombie/Zombie 01/03-Attack/__Zombie01_Attack_{i}.png")
+    imgAtack = escalarImg(imgAtack, constantes.SCALA_ZOMBIE)
+    animacionesAtacar.append(imgAtack)
 
+animacionesMuerteZ=[]
+for i in range(7):
+    imgDie= pygame.image.load(f"assets/zombie/Zombie 01/05-Die/__Zombie01_Die_00{i}.png")
+    imgDie= escalarImg(imgDie, constantes.SCALA_ZOMBIE)
+    animacionesMuerteZ.append(imgDie)
+
+sonido_muerteZ=pygame.mixer.Sound("assets/zombie/Zombie 01/05-Die/zombie-death-2-95167.mp3")
 
 zombies = []
 dificult = 10  # total de zombies que aparecerán
 zombies_creados = 0
 tiempo_ultimo_zombie = pygame.time.get_ticks()
 zombie_intervalo = 1500  # milisegundos entre cada aparición
-
-
-
 
 #menu
 
@@ -148,14 +152,18 @@ while True:
     if zombies_creados < dificult and tiempo_actual - tiempo_ultimo_zombie >= zombie_intervalo:
         direccion = random.randint(0, 1)
         x = 1020 if direccion == 1 else 37
-        zombies.append(Zombie(x, 450, animacionesCaminarZ, animacionesAtacar, direccion))
+        zombies.append(Zombie(x, 450, animacionesCaminarZ, animacionesAtacar, animacionesMuerteZ, direccion))
         zombies_creados += 1
         tiempo_ultimo_zombie = tiempo_actual
     
     for zombie in zombies[:]:
         for bala in balas[:]:
             if bala.forma.colliderect(zombie.forma):
-                zombies.remove(zombie)  
+                zombie.vida -= 5
+                if zombie.vida <= 0 and not zombie.muerto:
+                    zombie.muerte()
+                    sonido_muerteZ.play()
+                    #zombies.remove(zombie)
                 balas.remove(bala)      
                 break
         if zombie.forma.colliderect(jugador.forma):
@@ -169,7 +177,6 @@ while True:
                 zombie.forma.x -= 3  
         else:
             zombie.detenido = False 
-
         zombie.movimiento()
         zombie.update()
         zombie.dibujar(ventana)

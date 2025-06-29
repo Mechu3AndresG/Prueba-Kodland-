@@ -1,10 +1,10 @@
 import pygame,sys,constantes
 from personaje import Personaje
-#from bullet import Bullet
+from bullet import Bullet
 
 pygame.init();
 
-#ventana
+#ventana 
 ventana = pygame.display.set_mode((constantes.ANCHO_VENTANA,constantes.ALTO_VENTANA));
 #titulo e icono 
 pygame.display.set_caption("Juego Kodland")
@@ -23,6 +23,9 @@ imagenJugador = pygame.image.load("assets/Soldado/Soldier-Guy-PNG/Arma de Fuego/
 imagenJugador=escalarImg(imagenJugador, constantes.SCALA_PERSONAJE)
 
 #imagen bala
+imagenBalas=pygame.image.load("assets/Soldado/Soldier-Guy-PNG/Balas/Bullet.png")
+imagenBalas=escalarImg(imagenBalas,constantes.SCALA_BALA)
+balas=[]
 
 
 animacionesCaminar=[]
@@ -79,6 +82,14 @@ while True:
     jugador.update()
 
     jugador.dibujar(ventana)
+
+    #actualizar balas
+    for bala in balas[:]:
+        bala.update()
+        bala.dibujar(ventana)
+        if bala.rect.right < 0 or bala.rect.left > constantes.ANCHO_VENTANA:
+            balas.remove(bala)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit();
@@ -94,7 +105,12 @@ while True:
             if event.key == pygame.K_f:
                 dispara = True
                 jugador.shot(dispara)
-
+                #crea bala
+                direccion = -1 if jugador.flip else 1
+                offset = -30 if jugador.flip else 30
+                x_bala = jugador.forma.centerx + offset
+                y_bala = jugador.forma.centery
+                balas.append(Bullet(x_bala, y_bala, direccion, imagenBalas))
         if event.type== pygame.KEYUP:
             #tecla arriba
             if event.key == pygame.K_a:

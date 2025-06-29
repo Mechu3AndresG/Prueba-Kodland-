@@ -15,10 +15,12 @@ class Personaje():
         self.forma.center = (x,y)
     
     def update(self):
-        cooldown_animacion = 100
+        cooldown_animacion = 0
         if self.disparo:
+            cooldown_animacion = 50
             self.image = self.animacionesDisparo[self.frame_index]   
         else:
+            cooldown_animacion = 100
             self.image = self.animaciones[self.frame_index]
         if pygame.time.get_ticks() - self.update_time >= cooldown_animacion:
             self.frame_index = self.frame_index + 1

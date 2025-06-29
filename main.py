@@ -1,8 +1,11 @@
 import pygame,sys,constantes
 from personaje import Personaje
 from bullet import Bullet
+from zombie import Zombie
+import random
 
-pygame.init();
+pygame.init()
+pygame.mixer.init()
 
 #ventana 
 ventana = pygame.display.set_mode((constantes.ANCHO_VENTANA,constantes.ALTO_VENTANA));
@@ -28,10 +31,15 @@ imagenBalas=escalarImg(imagenBalas,constantes.SCALA_BALA)
 balas=[]
 
 
+
+
 animacionesCaminar=[]
 animacionesDisparo=[]
 animacionesMuerte=[]
 animacionesCaminar.append(imagenJugador)
+
+
+
 for i in range (9):
     img = pygame.image.load(f"assets/Soldado/Soldier-Guy-PNG/Arma de Fuego/02-Run/E_E_Gun__Run_000_00{i}.png ")
     img = escalarImg(img, constantes.SCALA_PERSONAJE)
@@ -45,6 +53,32 @@ for i in range (9):
 jugador=Personaje(508,450, animacionesCaminar, animacionesDisparo)
 
 
+#imagenes zombie
+
+imagenZombie =pygame.image.load("assets/zombie/Zombie 01/01-Idle/__Zombie01_Idle_000.png")
+imagenZombie=escalarImg(imagenZombie, constantes.SCALA_ZOMBIE) 
+animacionesCaminarZ=[]
+#animacionesAtacar=[]
+animacionesCaminarZ.append(imagenZombie)
+
+for i in range (7):
+    img = pygame.image.load(f"assets/zombie/Zombie 01/02-Walk/__Zombie01_Walk_00{i}.png")
+    img = escalarImg(img, constantes.SCALA_ZOMBIE)
+    animacionesCaminarZ.append(img)
+
+#for i in range (11):
+  #  imgShot = pygame.image.load(f"assets/zombie/Zombie 01/03-Attack/__Zombie01_Attack_00{i}.png")
+   # imgShot = escalarImg(imgShot, constantes.SCALA_PERSONAJE)
+   # animacionesAtacar.append(imgShot)
+
+zombies = []
+dificult = 10  # total de zombies que aparecerán
+zombies_creados = 0
+tiempo_ultimo_zombie = pygame.time.get_ticks()
+zombie_intervalo = 1500  # milisegundos entre cada aparición
+
+
+
 
 #menu
 
@@ -56,9 +90,17 @@ ventana.blit(fondo,(0,0))
 #personaje control movimiento
 caminaDerecha = False
 caminarIzquierda = False
-
+sonido_caminar = pygame.mixer.Sound("assets/Soldado/Soldier-Guy-PNG/Arma de Fuego/02-Run/stepstone_1.wav")
+sonido_camina=False
 #disparar
 dispara=False
+sonido_disparo = pygame.mixer.Sound("assets/Soldado/Soldier-Guy-PNG/Arma de Fuego/03-Shot/Futuristic Shotgun Single Shot.wav")
+
+
+
+
+pygame.mixer.music.load("aftermath-59735.mp3")
+pygame.mixer.music.play(-1)
 
 #controlar frame rate
 reloj = pygame.time.Clock()
@@ -69,18 +111,27 @@ while True:
     ventana.blit(fondo,(0,0))
     #inicializar pasos
     deltaX = 0
-    
+    no_camina=False
     #actualiza delta
     if caminaDerecha==True:
         deltaX=constantes.VELOCIDAD
     if caminarIzquierda==True:
         deltaX=-constantes.VELOCIDAD
+    
+    if not caminarIzquierda and not caminaDerecha:
+        no_camina = True
 
      #mover Jugador
     jugador.movimiento(deltaX) 
 
-    jugador.update()
+    if (caminaDerecha or caminarIzquierda) and not sonido_camina:
+        sonido_caminar.play(-1)
+        sonido_camina = True
+    elif not caminaDerecha and not caminarIzquierda and sonido_camina:
+        sonido_caminar.stop()
+        sonido_camina = False
 
+    jugador.update(no_camina)
     jugador.dibujar(ventana)
 
     #actualizar balas
@@ -89,6 +140,20 @@ while True:
         bala.dibujar(ventana)
         if bala.rect.right < 0 or bala.rect.left > constantes.ANCHO_VENTANA:
             balas.remove(bala)
+
+    #spawn zombies 
+    tiempo_actual = pygame.time.get_ticks()
+    if zombies_creados < dificult and tiempo_actual - tiempo_ultimo_zombie >= zombie_intervalo:
+        direccion = random.randint(0, 1)
+        x = 1020 if direccion == 1 else 37
+        zombies.append(Zombie(x, 450, animacionesCaminarZ, direccion))
+        zombies_creados += 1
+        tiempo_ultimo_zombie = tiempo_actual
+    for zombie in zombies[:]:
+        zombie.movimiento()
+        zombie.update()
+        zombie.dibujar(ventana)
+
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -99,28 +164,30 @@ while True:
             #tecla abajo
             if event.key == pygame.K_a:
                 caminarIzquierda=True
+                
             if event.key == pygame.K_d:
                 caminaDerecha=True
+                
             #tecla disparo
             if event.key == pygame.K_f:
                 dispara = True
+                sonido_disparo.play()
                 jugador.shot(dispara)
                 #crea bala
                 direccion = -1 if jugador.flip else 1
                 offset = -30 if jugador.flip else 30
                 x_bala = jugador.forma.centerx + offset
-                y_bala = jugador.forma.centery
+                y_bala = jugador.forma.centery + 20
                 balas.append(Bullet(x_bala, y_bala, direccion, imagenBalas))
+        
         if event.type== pygame.KEYUP:
             #tecla arriba
             if event.key == pygame.K_a:
                 caminarIzquierda=False
             if event.key == pygame.K_d:
                 caminaDerecha=False
-            
-        
-           
-            
+
+
     pygame.display.update()
     
 

@@ -14,11 +14,13 @@ class Personaje():
         self.forma = self.image.get_rect()
         self.forma.center = (x,y)
     
-    def update(self):
+    def update(self, quieto):
         cooldown_animacion = 0
         if self.disparo:
             cooldown_animacion = 50
             self.image = self.animacionesDisparo[self.frame_index]   
+        elif quieto:
+            self.image = self.animaciones[0]
         else:
             cooldown_animacion = 100
             self.image = self.animaciones[self.frame_index]
